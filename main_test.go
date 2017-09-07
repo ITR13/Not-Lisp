@@ -129,3 +129,20 @@ func TestAddOne(t *testing.T) {
 		t.Fatal("Expected [1], got ", s)
 	}
 }
+
+func TestAdvancedMethods(t *testing.T) {
+	tests := [][2]interface{}{
+		{"", 0},
+	}
+	for _, pair := range tests {
+		p, r := pair[0].(string), pair[1].(int)
+		mainScope := &MainScope{}
+		v := InterpretString(p, mainScope).GetName()
+		c := v.Count()
+		if r != c {
+			t.Errorf("%s: Expected %d but got %d ( %v )", p, r, c, v.bytes)
+		} else {
+			t.Logf("%s: Succeeded with %d ( %v )", p, c, v.bytes)
+		}
+	}
+}

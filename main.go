@@ -3,6 +3,8 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
 )
 
 type Function interface {
@@ -14,33 +16,34 @@ type Function interface {
 }
 
 func main() {
-	programs := []string{
-		"()()()()",
-	}
-
-	for _, program := range programs {
-
+	for i := 1; i < len(os.Args); i++ {
+		program, err := ioutil.ReadFile(os.Args[i])
+		if err != nil {
+			panic(err)
+		}
 		mainScope := &MainScope{}
 
-		scope := InterpretString(program, mainScope)
+		scope := InterpretBytes(program, mainScope)
+
+		bytes, err := ioutil.ReadAll(os.Stdin)
+		if err != nil {
+			panic(err)
+		}
+
+		scope = scope.Call(&Name{scope, bytes, 0})
 		ex := scope.GetName()
 		fmt.Println(string(ex.bytes))
-
-		if len(ex.bytes) == 0 {
-			fmt.Println(program, " => ", -1)
-		} else {
-			var s uint64
-			for i := range ex.bytes {
-				s += uint64(ex.bytes[i])
-			}
-
-			fmt.Println(program, " => ", s)
-		}
 	}
 }
 
 func InterpretString(s string, f Function) Function {
 	for _, c := range []byte(s) {
+		f = Interpret(c, f)
+	}
+	return f
+}
+func InterpretBytes(bytes []byte, f Function) Function {
+	for _, c := range bytes {
 		f = Interpret(c, f)
 	}
 	return f
