@@ -36,12 +36,16 @@ type NegOne struct {
 }
 
 func (nOne *NegOne) Call(body Function) Function {
-	scope := &Scope{nOne.parent, body, nOne.name.GetName()}
+	var name *Name
+	if nOne.name != nil {
+		nOne.name = nOne.name.GetName()
+	}
+	scope := &Scope{nOne.parent, body, name}
 
 	//fmt.Println("\nNONE-CALLED:", nOne, body, nOne.name.GetName())
 
 	if scope.body == nil {
-		panic("Find out what to do")
+		//panic("Find out what to do")
 	}
 
 	return scope

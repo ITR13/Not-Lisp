@@ -12,7 +12,7 @@ type Scope struct {
 
 func (scope *Scope) Call(arg Function) Function {
 	if scope.body == nil {
-		return &Name{scope, []byte{0}, 0}
+		return &Zero{scope}
 	}
 	return scope.body
 }

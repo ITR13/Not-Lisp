@@ -16,9 +16,23 @@ func ParseCall(f Function) *ParsedCall {
 	pc.found[nil] = 0
 
 	mainCall := 0
+
 	for f != nil {
 		pc.Add(f, mainCall)
+		mainCall++
+		_, ok := f.(*Zero)
+		if ok {
+			break
+		}
+		_, ok = f.(*NegOne)
+		if ok {
+			break
+		}
 		f = f.Call(nil)
+		if mainCall > 10000 {
+			fmt.Println("Maximum depth reached")
+			f = nil
+		}
 	}
 
 	return pc
@@ -45,7 +59,7 @@ func (pc *ParsedCall) GetIDOf(f Function) int {
 		s += fmt.Sprintf("[%s: %d] ", names[i], pc.GetIDOf(args[i]))
 	}
 	name := f.GetName()
-	pc.functions[id] = fmt.Sprintf("%v:\t[ %s] in %d, named %d.%s (%d)",
+	pc.functions[id] = fmt.Sprintf("%v:\t[ %s] in %d, named %v.%v (%v)",
 		reflect.TypeOf(f), s, pc.GetIDOf(f.GetParent()),
 		name.infinitum, name.bytes, name.Count(),
 	)

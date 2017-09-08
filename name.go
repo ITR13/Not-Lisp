@@ -88,6 +88,9 @@ func (name *Name) Find(n *Name) Function {
 }
 
 func (name *Name) GetName() *Name {
+	if name == nil {
+		return &Name{nil, []byte{}, 0}
+	}
 	bytes := make([]byte, len(name.bytes))
 	copy(bytes, name.bytes)
 	return &Name{name.parent, bytes, name.infinitum}
@@ -98,10 +101,16 @@ func (name *Name) AppendCall(f Function) {
 }
 
 func (name *Name) GetParent() Function {
+	if name == nil {
+		return nil
+	}
 	return name.parent
 }
 
 func (name *Name) Count() int {
+	if name == nil {
+		return -2
+	}
 	if len(name.bytes) == 0 {
 		return -1
 	}

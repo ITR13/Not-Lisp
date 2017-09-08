@@ -23,6 +23,7 @@ func (call *Call) AppendCall(f Function) {
 }
 
 func (call *Call) GetParent() Function {
+	return nil
 	panic("Should not happen")
 }
 func (call *Call) GetArgs() ([]Function, []string) {
