@@ -13,6 +13,7 @@ type Function interface {
 	Call(Function) Function
 	AppendCall(Function)
 	GetParent() Function
+	GetArgs() ([]Function, []string)
 }
 
 func main() {

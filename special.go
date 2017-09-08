@@ -26,6 +26,10 @@ func (zero *Zero) GetParent() Function {
 	return zero.parent
 }
 
+func (zero *Zero) GetArgs() ([]Function, []string) {
+	return []Function{}, []string{}
+}
+
 type NegOne struct {
 	name   Function
 	parent Function
@@ -62,4 +66,8 @@ func (nOne *NegOne) AppendCall(f Function) {
 
 func (nOne *NegOne) GetParent() Function {
 	return nOne.parent
+}
+
+func (nOne *NegOne) GetArgs() ([]Function, []string) {
+	return []Function{nOne.name}, []string{"Name"}
 }

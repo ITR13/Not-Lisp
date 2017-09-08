@@ -48,8 +48,13 @@ func (scope *Scope) GetParent() Function {
 	return scope.parent
 }
 
+func (scope *Scope) GetArgs() ([]Function, []string) {
+	return []Function{scope.body, scope.name}, []string{"Body", "Name"}
+}
+
 type MainScope struct {
-	body Function
+	allowExit bool
+	body      Function
 }
 
 func (scope *MainScope) Call(arg Function) Function {
@@ -77,6 +82,12 @@ func (scope *MainScope) AppendCall(f Function) {
 }
 
 func (scope *MainScope) GetParent() Function {
-	log.Fatal("Tried to exit main-scope")
+	if !scope.allowExit {
+		log.Fatal("Tried to exit main-scope")
+	}
 	return nil
+}
+
+func (scope *MainScope) GetArgs() ([]Function, []string) {
+	return []Function{scope.body}, []string{"Body"}
 }

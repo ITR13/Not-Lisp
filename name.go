@@ -111,3 +111,7 @@ func (name *Name) Count() int {
 	}
 	return s
 }
+
+func (name *Name) GetArgs() ([]Function, []string) {
+	return []Function{}, []string{}
+}

@@ -25,3 +25,6 @@ func (call *Call) AppendCall(f Function) {
 func (call *Call) GetParent() Function {
 	panic("Should not happen")
 }
+func (call *Call) GetArgs() ([]Function, []string) {
+	return []Function{call.body, call.arg}, []string{"Body", "Args"}
+}
