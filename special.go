@@ -16,9 +16,9 @@ func (zero *Zero) GetSourceN() (int, int) {
 
 func (zero *Zero) Call(name Function) Function {
 	if name != nil {
-		//fmt.Println("\nZERO-CALLED:", zero, name, name.GetName().bytes)
+		fmt.Println("\nZERO-CALLED:", zero, name, name.GetName().bytes)
 	} else {
-		//fmt.Println("\nZERO-CALLED:", zero, name, nil)
+		fmt.Println("\nZERO-CALLED:", zero, name, nil)
 	}
 
 	return &NegOne{name, zero.parent, charN, fileN}
@@ -64,7 +64,6 @@ func (nOne *NegOne) Call(body Function) Function {
 	}
 	scope := &Scope{nOne.parent, body, name, charN, fileN}
 	fmt.Println("NOne", body, name, reflect.TypeOf(body), reflect.TypeOf(name))
-
 	return scope
 }
 

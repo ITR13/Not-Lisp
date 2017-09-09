@@ -24,15 +24,20 @@ var (
 )
 
 func main() {
-	program := "()()(())(()())(*)"
+	program := "()()()()" //"()()(())(()())(*)"
+
+	fmt.Print(program, " => ")
+	fmt.Println(Count(Parse([]byte(program))))
+	fmt.Println("Done")
+	return
 	mainScope := &MainScope{true, nil, fileN}
 
 	scope := InterpretString(program, mainScope)
-	/*pc := ParseCall(scope)
+	pc := ParseCall(scope)
 	for i := range pc.functions {
 		fmt.Println(pc.functions[i])
 	}
-	fmt.Println("--------------")*/
+	fmt.Println("--------------")
 	//scope = scope.Call(&Zero{mainScope, charN, fileN})
 	ex := scope.GetName()
 	fmt.Println(string(ex.bytes))
@@ -84,10 +89,10 @@ func RunFunc(f Function, arg Function) Function {
 	//D, C := arg.GetSourceN()
 	//fmt.Printf("Running %d:%d with %d:%d\n", A, B, C, D)
 
-	scope, isScope := f.(*Scope)
+	_, isScope := f.(*Scope)
 	if isScope {
-		EnterScope(scope)
-		defer ExitScope(scope)
+		//EnterScope(scope)
+		//defer ExitScope(scope)
 	}
 
 	name := f.GetName()
@@ -112,7 +117,7 @@ func EnterScope(scope *Scope) {
 		if ok {
 			Overwritten[scope.body] = f
 		}
-		fmt.Println(scope.body, scope.GetName())
+		fmt.Printf("Entered scope %v as %d\n", scope.body, scope.GetName())
 		Functions[c] = scope.body
 	}
 }
