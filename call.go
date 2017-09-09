@@ -21,8 +21,12 @@ func (call *Call) Find(name *Name) Function {
 }
 
 func (call *Call) GetName() *Name {
+	return call.Resolve().GetName()
 	//return RunFunc(call.body, call.arg).GetName()
-	return call.body.Call(call.arg).GetName()
+	//name := call.body.GetName()
+	//name.SubOne()
+	//return name
+	//return call.body.Call(call.arg).GetName()
 }
 
 func (call *Call) AppendCall(f Function) {
@@ -35,4 +39,8 @@ func (call *Call) GetParent() Function {
 }
 func (call *Call) GetArgs() ([]Function, []string) {
 	return []Function{call.body, call.arg}, []string{"Body", "Args"}
+}
+
+func (call *Call) Resolve() Function {
+	return RunFunc(call.body, call.arg)
 }

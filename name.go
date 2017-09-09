@@ -134,3 +134,5 @@ func (name *Name) Count() int {
 func (name *Name) GetArgs() ([]Function, []string) {
 	return []Function{}, []string{}
 }
+
+func (name *Name) Resolve() Function { return name }

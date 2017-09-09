@@ -70,3 +70,49 @@ func (pc *ParsedCall) GetIDOf(f Function) int {
 
 	return id
 }
+
+type DebugFunction struct {
+	parent       Function
+	charN, fileN int
+}
+
+func (debug *DebugFunction) AppendCall(Function) {
+	panic("Cannot happen")
+}
+
+func (debug *DebugFunction) Call(f Function) Function {
+	charN, fileN := -1, -1
+	var name *Name
+	if f != nil {
+		charN, fileN = f.GetSourceN()
+		name = f.GetName()
+	}
+	fmt.Printf("DebugFunction at %d:%d called with %d:%d (%v)\n",
+		debug.fileN, debug.charN, charN, fileN, name)
+	return debug
+}
+
+func (debug *DebugFunction) GetArgs() ([]Function, []string) {
+	return []Function{}, []string{}
+}
+
+func (debug *DebugFunction) GetName() *Name {
+	fmt.Printf("Got name from DebugFunction at %d:%d\n",
+		debug.charN, debug.fileN)
+	return &Name{debug.parent, []byte{1}, 1, charN, fileN}
+}
+
+func (debug *DebugFunction) GetParent() Function {
+	fmt.Printf("Got parent from DebugFunction at %d:%d\n",
+		debug.charN, debug.fileN)
+	return debug.parent
+}
+
+func (debug *DebugFunction) GetSourceN() (int, int) {
+	return debug.charN, debug.fileN
+}
+
+func (debug *DebugFunction) Resolve() Function {
+	fmt.Printf("DebugFunction at %d:%d resolved\n", debug.fileN, debug.charN)
+	return debug
+}

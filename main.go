@@ -9,6 +9,7 @@ type Function interface {
 	GetName() *Name
 	//Find(*Name) Function
 	Call(Function) Function
+	Resolve() Function
 	AppendCall(Function)
 	GetParent() Function
 	GetArgs() ([]Function, []string)
@@ -23,15 +24,15 @@ var (
 )
 
 func main() {
-	program := "()()(())(()())()"
+	program := "()()(())(()())(*)"
 	mainScope := &MainScope{true, nil, fileN}
 
 	scope := InterpretString(program, mainScope)
-	pc := ParseCall(scope)
+	/*pc := ParseCall(scope)
 	for i := range pc.functions {
 		fmt.Println(pc.functions[i])
 	}
-	fmt.Println("--------------")
+	fmt.Println("--------------")*/
 	//scope = scope.Call(&Zero{mainScope, charN, fileN})
 	ex := scope.GetName()
 	fmt.Println(string(ex.bytes))
@@ -70,6 +71,8 @@ func Interpret(c byte, f Function) Function {
 		parent := f.GetParent()
 		parent.AppendCall(f)
 		return parent
+	case '*':
+		f.AppendCall(&DebugFunction{f, charN, fileN})
 	default:
 		//panic(fmt.Errorf("Tried to interpret unknown symbol %v", c))
 	}
@@ -77,22 +80,28 @@ func Interpret(c byte, f Function) Function {
 }
 
 func RunFunc(f Function, arg Function) Function {
+	//B, A := f.GetSourceN()
+	//D, C := arg.GetSourceN()
+	//fmt.Printf("Running %d:%d with %d:%d\n", A, B, C, D)
+
 	scope, isScope := f.(*Scope)
 	if isScope {
 		EnterScope(scope)
+		defer ExitScope(scope)
 	}
 
 	name := f.GetName()
 	c := name.Count()
 
 	rf, ok := Functions[c]
-	if isScope {
-		ExitScope(scope)
-	}
-
 	if ok {
+		/*D, C = rf.GetSourceN()
+		fmt.Printf("Function with name %d found, running "+
+			"%d:%d instead of %d:%d\n", c, C, D, A, B)*/
 		return rf.Call(arg)
 	}
+	//fmt.Printf("No function with name %d found, running "+
+	//	"%d:%d\n", c, A, B)
 	return f.Call(arg)
 }
 
@@ -103,6 +112,7 @@ func EnterScope(scope *Scope) {
 		if ok {
 			Overwritten[scope.body] = f
 		}
+		fmt.Println(scope.body, scope.GetName())
 		Functions[c] = scope.body
 	}
 }

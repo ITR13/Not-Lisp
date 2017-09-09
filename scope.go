@@ -57,6 +57,8 @@ func (scope *Scope) GetArgs() ([]Function, []string) {
 	return []Function{scope.body, scope.name}, []string{"Body", "Name"}
 }
 
+func (scope *Scope) Resolve() Function { return scope }
+
 type MainScope struct {
 	allowExit bool
 	body      Function
@@ -104,3 +106,5 @@ func (scope *MainScope) GetParent() Function {
 func (scope *MainScope) GetArgs() ([]Function, []string) {
 	return []Function{scope.body}, []string{"Body"}
 }
+
+func (scope *MainScope) Resolve() Function { return scope }

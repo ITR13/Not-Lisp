@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+)
 
 type Zero struct {
 	parent       Function
@@ -13,9 +16,9 @@ func (zero *Zero) GetSourceN() (int, int) {
 
 func (zero *Zero) Call(name Function) Function {
 	if name != nil {
-		fmt.Println("\nZERO-CALLED:", zero, name, name.GetName().bytes)
+		//fmt.Println("\nZERO-CALLED:", zero, name, name.GetName().bytes)
 	} else {
-		fmt.Println("\nZERO-CALLED:", zero, name, nil)
+		//fmt.Println("\nZERO-CALLED:", zero, name, nil)
 	}
 
 	return &NegOne{name, zero.parent, charN, fileN}
@@ -42,6 +45,8 @@ func (zero *Zero) GetArgs() ([]Function, []string) {
 	return []Function{}, []string{}
 }
 
+func (zero *Zero) Resolve() Function { return zero }
+
 type NegOne struct {
 	name         Function
 	parent       Function
@@ -58,7 +63,7 @@ func (nOne *NegOne) Call(body Function) Function {
 		name = nOne.name.GetName()
 	}
 	scope := &Scope{nOne.parent, body, name, charN, fileN}
-	fmt.Println("NOne", body, name)
+	fmt.Println("NOne", body, name, reflect.TypeOf(body), reflect.TypeOf(name))
 
 	return scope
 }
@@ -88,3 +93,5 @@ func (nOne *NegOne) GetParent() Function {
 func (nOne *NegOne) GetArgs() ([]Function, []string) {
 	return []Function{nOne.name}, []string{"Name"}
 }
+
+func (nOne *NegOne) Resolve() Function { return nOne }
