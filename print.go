@@ -14,6 +14,7 @@ func ParseCall(f Function) *ParsedCall {
 	pc := &ParsedCall{make(map[Function]int), make([]string, 1)}
 	pc.functions[0] = "NIL"
 	pc.found[nil] = 0
+	pc.found[(*Name)(nil)] = 0
 
 	mainCall := 0
 
@@ -33,8 +34,9 @@ func ParseCall(f Function) *ParsedCall {
 			fmt.Println("Maximum depth reached")
 			f = nil
 		}
+		charN++
 	}
-
+	fileN++
 	return pc
 }
 
@@ -44,6 +46,7 @@ func (pc *ParsedCall) Add(f Function, callID int) {
 }
 
 func (pc *ParsedCall) GetIDOf(f Function) int {
+	fmt.Println(f, reflect.TypeOf(f), f == nil)
 	id, ok := pc.found[f]
 	if ok {
 		return id
@@ -59,9 +62,10 @@ func (pc *ParsedCall) GetIDOf(f Function) int {
 		s += fmt.Sprintf("[%s: %d] ", names[i], pc.GetIDOf(args[i]))
 	}
 	name := f.GetName()
-	pc.functions[id] = fmt.Sprintf("%v:\t[ %s] in %d, named %v.%v (%v)",
+	charN, fileN := f.GetSourceN()
+	pc.functions[id] = fmt.Sprintf("%v:\t[ %s] in %d, named %v.%v (%v) - %d:%d",
 		reflect.TypeOf(f), s, pc.GetIDOf(f.GetParent()),
-		name.infinitum, name.bytes, name.Count(),
+		name.infinitum, name.bytes, name.Count(), fileN, charN,
 	)
 
 	return id

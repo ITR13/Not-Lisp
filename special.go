@@ -1,21 +1,33 @@
 package main
 
+import "fmt"
+
 type Zero struct {
-	parent Function
+	parent       Function
+	charN, fileN int
+}
+
+func (zero *Zero) GetSourceN() (int, int) {
+	return zero.charN, zero.fileN
 }
 
 func (zero *Zero) Call(name Function) Function {
-	//fmt.Println("\nZERO-CALLED:", zero, name, name.GetName())
+	if name != nil {
+		fmt.Println("\nZERO-CALLED:", zero, name, name.GetName().bytes)
+	} else {
+		fmt.Println("\nZERO-CALLED:", zero, name, nil)
+	}
 
-	return &NegOne{name, zero.parent}
+	return &NegOne{name, zero.parent, charN, fileN}
 }
 
 func (zero *Zero) Find(name *Name) Function {
-	return zero.parent.Find(name)
+	panic("Should not happen")
+	//return zero.parent.Find(name)
 }
 
 func (zero *Zero) GetName() *Name {
-	return &Name{zero.parent, []byte{0}, 0}
+	return &Name{zero.parent, []byte{0}, 0, charN, fileN}
 }
 
 func (zero *Zero) AppendCall(f Function) {
@@ -31,32 +43,33 @@ func (zero *Zero) GetArgs() ([]Function, []string) {
 }
 
 type NegOne struct {
-	name   Function
-	parent Function
+	name         Function
+	parent       Function
+	charN, fileN int
+}
+
+func (nOne *NegOne) GetSourceN() (int, int) {
+	return nOne.charN, nOne.fileN
 }
 
 func (nOne *NegOne) Call(body Function) Function {
 	var name *Name
 	if nOne.name != nil {
-		nOne.name = nOne.name.GetName()
+		name = nOne.name.GetName()
 	}
-	scope := &Scope{nOne.parent, body, name}
-
-	//fmt.Println("\nNONE-CALLED:", nOne, body, nOne.name.GetName())
-
-	if scope.body == nil {
-		//panic("Find out what to do")
-	}
+	scope := &Scope{nOne.parent, body, name, charN, fileN}
+	fmt.Println("NOne", body, name)
 
 	return scope
 }
 
 func (nOne *NegOne) Find(name *Name) Function {
-	return nOne.parent.Find(name)
+	panic("Should not happen")
+	//return nOne.parent.Find(name)
 }
 
 func (nOne *NegOne) GetName() *Name {
-	return &Name{nOne.parent, []byte{}, 0}
+	return &Name{nOne.parent, []byte{}, 0, charN, fileN}
 }
 
 func (nOne *NegOne) AppendCall(f Function) {
@@ -64,7 +77,7 @@ func (nOne *NegOne) AppendCall(f Function) {
 		nOne.name = f
 	} else {
 		panic("Wait, what do I do here again?")
-		nOne.name = &Call{nOne, nOne.name, f}
+		nOne.name = &Call{nOne, nOne.name, f, charN, fileN}
 	}
 }
 

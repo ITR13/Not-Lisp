@@ -1,9 +1,14 @@
 package main
 
 type Call struct {
-	parent Function
-	body   Function
-	arg    Function
+	parent       Function
+	body         Function
+	arg          Function
+	charN, fileN int
+}
+
+func (call *Call) GetSourceN() (int, int) {
+	return call.charN, call.fileN
 }
 
 func (call *Call) Call(arg Function) Function {
@@ -11,11 +16,13 @@ func (call *Call) Call(arg Function) Function {
 }
 
 func (call *Call) Find(name *Name) Function {
-	return call.parent.Find(name)
+	panic("Should not happen")
+	//	return call.parent.Find(name)
 }
 
 func (call *Call) GetName() *Name {
-	return RunFunc(call.body, call.arg).GetName()
+	//return RunFunc(call.body, call.arg).GetName()
+	return call.body.Call(call.arg).GetName()
 }
 
 func (call *Call) AppendCall(f Function) {
@@ -23,8 +30,8 @@ func (call *Call) AppendCall(f Function) {
 }
 
 func (call *Call) GetParent() Function {
+	//panic("Should not happen")
 	return nil
-	panic("Should not happen")
 }
 func (call *Call) GetArgs() ([]Function, []string) {
 	return []Function{call.body, call.arg}, []string{"Body", "Args"}
