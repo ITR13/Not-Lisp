@@ -1,9 +1,5 @@
 package main
 
-import (
-	"fmt"
-)
-
 const (
 	Encapsulated State = iota
 	HasName      State = iota
@@ -23,12 +19,10 @@ var (
 )
 
 func Parse(s []byte) *Data {
-	//fmt.Println("Parsing: ", string(s))
 	var prev *Data
 	indent := 0
 	subString := []byte{}
 	for _, c := range s {
-		fmt.Println(string(c))
 		if indent > 0 {
 			subString = append(subString, c)
 			switch c {
@@ -39,7 +33,6 @@ func Parse(s []byte) *Data {
 			}
 			if indent == 0 {
 				prev = Call(prev, subString)
-				fmt.Println("Exited call :>", prev)
 			}
 		} else {
 			switch c {
@@ -60,18 +53,12 @@ func Parse(s []byte) *Data {
 		return &Data{[]byte{}, []byte{}, Encapsulated}
 	}
 
-	fmt.Println("Exit: ", prev)
-
 	return prev
 }
 
 func Call(data *Data, arg []byte) *Data {
 	if data == nil {
 		return &Data{arg, []byte{}, Encapsulated}
-	}
-
-	if len(data.name) == 1 {
-		panic("!!")
 	}
 
 	c := Count(data)
@@ -82,22 +69,18 @@ func Call(data *Data, arg []byte) *Data {
 
 	switch data.state {
 	case Encapsulated:
-		fmt.Println("IE:", data.bytes)
 		if len(data.bytes) == 0 {
 			return &Data{[]byte{}, arg[1 : len(arg)-1], HasName}
 		}
 
 		return Parse(data.bytes[1 : len(data.bytes)-1])
 	case HasName:
-		fmt.Println("HN:", data.name, data.bytes)
 		return &Data{arg[1 : len(arg)-1], data.name, HasBody}
 	case HasBody:
-		fmt.Println("HB:", data.bytes)
 		c = Count(Parse(data.name))
 		EnterScope(arg[1:len(arg)-1], c)
 		data = Parse(data.bytes)
 		ExitScope(c)
-		fmt.Println("HB<-", data)
 		return data
 	}
 	panic("Cannot Happen")
