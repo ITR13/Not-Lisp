@@ -7,17 +7,10 @@ import (
 )
 
 func main() {
-	s := "()()((*)):(  ()()(((*))):( (*)( ((*))() ) )  )-( ()()((((*)))):( (((*)))() ))()"
-	//s = strings.Replace(s, "*", "((((()))))", -1)
-	s = strings.Replace(s, " ", "", -1)
-	program := []byte(s)
+	data := &Data{[]byte("()()(())(()())((()))"), []byte{}, HasBody}
 
-	fmt.Print(string(program), " => ")
-	data := Parse(program)
-	fmt.Printf("%s, %s, %d => ", data.bytes, data.name, data.state)
-	c := Count(data)
-	fmt.Println(c)
-	fmt.Println("Done")
+	data = Call(data, []byte("()"))
+	fmt.Println(data, Count(data))
 }
 
 func PrintWithIndent(s []byte, I []int) {

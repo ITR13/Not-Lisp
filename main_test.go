@@ -87,10 +87,10 @@ func TestParameters(t *testing.T) {
 		{"()()()(()()())((()))", 2},
 		{"()()()(()()())(((())))", 3},
 
-		//Name[1*]      Name[2*]   Call[1*] with 2*   Name[3*]		Call[3*
-		{"()()((*))(  ()()(((*)))( (*)(((*))()) )  )( ()()((((*))))( (((*)))() )()", 0},
-		{"()()((*))(  ()()(((*)))( (*)(((*))()) )  )( ()()((((*))))( (((*)))() )(())", 1},
-		{"()()((*))(  ()()(((*)))( (*)(((*))()) )  )( ()()((((*))))( (((*)))() )((()))", 2},
+		//Name[1*]      Name[2*]   Call[1*] with 2*   Name[3*]		Call[3*]
+		{"()()((*))(  ()()(((*)))( (*)( ((*))() ) )()      )( ()()((((*))))( (((*)))() ))", 0},
+		{"()()((*))(  ()()(((*)))( (*)( ((*))() ) )(())    )( ()()((((*))))( (((*)))() ))", 1},
+		{"()()((*))(  ()()(((*)))( (*)( ((*))() ) )((()))  )( ()()((((*))))( (((*)))() ))", 2},
 
 		//Name[2]      Name[2*]     Name[Call[2*]+2]    Call[2]        Name[1*]   Call[2*]  Call[1*]
 		//{"()()((()))(  ()()(((*)))( ()()(((((*))()))) ( (())() ) )  )( ()()((*))((( (((*)))( (*)() ) )))  )()", 0},
@@ -99,15 +99,16 @@ func TestParameters(t *testing.T) {
 	}
 	for _, pair := range tests {
 		s := pair[0].(string)
+		originalString := s
 		s = strings.Replace(s, "*", "((((()))))", -1)
 		s = strings.Replace(s, " ", "", -1)
 
 		p, r := []byte(s), pair[1].(int)
 		c := Count(Parse(p))
 		if r != c {
-			t.Errorf("%s: Expected %d but got %d", p, r, c)
+			t.Errorf("%s: Expected %d but got %d", originalString, r, c)
 		} else {
-			t.Logf("%s: Succeeded with %d", p, c)
+			t.Logf("%s: Succeeded with %d", originalString, c)
 		}
 	}
 }

@@ -1,5 +1,9 @@
 package main
 
+import (
+	"fmt"
+)
+
 const (
 	Encapsulated State = iota
 	HasName      State = iota
@@ -37,6 +41,11 @@ func Parse(s []byte) *Data {
 			}
 			if indent == 0 {
 				prev = Call(prev, subString)
+				if prev == nil {
+					fmt.Println("Call returned nil: ", string(s))
+					PrintWithIndent(s, I[:i+1])
+					return nil
+				}
 			}
 		} else {
 			switch c {
@@ -44,16 +53,20 @@ func Parse(s []byte) *Data {
 				indent++
 				subString = []byte{'('}
 			case ')':
+				fmt.Println("Unbalanced Parenthesises: ", string(s))
 				PrintWithIndent(s, I[:i+1])
-				panic("Unbalanced Parenthesises")
+				return nil
 			}
 		}
 	}
 
 	if indent > 0 {
+		fmt.Println("Unbalanced Parenthesises: ")
 		PrintWithIndent(s, I)
-		panic("Unbalanced Parenthesises")
+		return nil
 	}
+
+	fmt.Println("Exit: ", prev, Count(prev))
 
 	if prev == nil {
 		return &Data{[]byte{}, []byte{}, Encapsulated}
@@ -63,11 +76,15 @@ func Parse(s []byte) *Data {
 }
 
 func Call(data *Data, arg []byte) *Data {
+	fmt.Println("Call: ", data, arg)
 	if data == nil {
 		return &Data{arg, []byte{}, Encapsulated}
 	}
 
 	c := Count(data)
+	if c == -2 {
+		return nil
+	}
 	override, ok := CurrentScope[c]
 	if ok && override != nil {
 		return Parse(*override)
@@ -76,15 +93,18 @@ func Call(data *Data, arg []byte) *Data {
 	switch data.state {
 	case Encapsulated:
 		if len(data.bytes) == 0 {
-			return &Data{[]byte{}, arg[1 : len(arg)-1], HasName}
+			return &Data{[]byte{}, Strip(arg), HasName}
 		}
 
-		return Parse(data.bytes[1 : len(data.bytes)-1])
+		return Parse(Strip(data.bytes))
 	case HasName:
-		return &Data{arg[1 : len(arg)-1], data.name, HasBody}
+		return &Data{Strip(arg), data.name, HasBody}
 	case HasBody:
 		c = Count(Parse(data.name))
-		EnterScope(arg[1:len(arg)-1], c)
+		if c == -2 {
+			return nil
+		}
+		EnterScope(Strip(arg), c)
 		data = Parse(data.bytes)
 		ExitScope(c)
 		return data
@@ -94,7 +114,7 @@ func Call(data *Data, arg []byte) *Data {
 
 func Count(data *Data) int {
 	if data == nil {
-		return 0
+		return -2
 	}
 	if data.state == HasName {
 		return -1
@@ -102,32 +122,41 @@ func Count(data *Data) int {
 
 	c := 0
 	for data.state != HasName {
-		if data.state == HasBody {
+		for data.state == HasBody {
 			data = Parse(data.bytes)
 			c++
+			if data == nil {
+				return -2
+			}
 		}
 		if len(data.bytes) == 0 {
 			return c
 		}
-		data = Parse(data.bytes[1 : len(data.bytes)-1])
+		data = Parse(Strip(data.bytes))
 		c++
+		if data == nil {
+			return -2
+		}
 	}
 	return c
 }
 
-func EnterScope(arg []byte, name int) {
-	old, ok := CurrentScope[name]
-	if ok {
-		Overwritten[&arg] = old
+func Strip(bytes []byte) []byte {
+	indent := 0
+	exited := false
+	for _, c := range bytes {
+		switch c {
+		case '(':
+			indent++
+		case ')':
+			indent--
+		}
+		if indent == 0 {
+			if exited {
+				panic("Tried to strip unencapsulated bytes")
+			}
+			exited = true
+		}
 	}
-	CurrentScope[name] = &arg
-}
-
-func ExitScope(name int) {
-	arg, ok := CurrentScope[name]
-	if !ok {
-		panic("Tried to exit scope that doesn't exist")
-	}
-	old := Overwritten[arg]
-	CurrentScope[name] = old
+	return bytes[1 : len(bytes)-1]
 }
