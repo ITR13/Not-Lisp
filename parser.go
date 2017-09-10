@@ -14,7 +14,7 @@ type Data struct {
 }
 
 func Parse(s []byte) *Data {
-	prev := &Data{[]byte{}, []byte{}, HasName}
+	var prev *Data
 	indent := 0
 	subString := []byte{}
 	for _, c := range s {
@@ -44,23 +44,31 @@ func Parse(s []byte) *Data {
 		panic("Unbalanced indents")
 	}
 
+	if prev == nil {
+		return &Data{[]byte{}, []byte{}, Encapsulated}
+	}
+
 	return prev
 }
 
 func Call(data *Data, arg []byte) *Data {
+	if data == nil {
+		return &Data{arg, []byte{}, Encapsulated}
+	}
+
 	//c := Count(data)
 
 	switch data.state {
 	case Encapsulated:
 		//fmt.Println("IE:", data.bytes)
 		if len(data.bytes) == 0 {
-			return &Data{[]byte{}, data.name, HasName}
+			return &Data{[]byte{}, arg[1 : len(arg)-1], HasName}
 		}
 
 		return Parse(data.bytes[1 : len(data.bytes)-1])
 	case HasName:
 		//fmt.Println("HN:", data.name, data.bytes)
-		return &Data{arg, data.name, HasBody}
+		return &Data{arg[1 : len(arg)-1], data.name, HasBody}
 	case HasBody:
 		//fmt.Println("HB:", data.bytes)
 		//Add Scope here
@@ -76,9 +84,15 @@ func Count(data *Data) int {
 	if data == nil {
 		return 0
 	}
+	if data.state == HasName {
+		return -1
+	}
 
 	c := 0
 	for data.state != HasName {
+		if data.state == HasBody {
+			c++
+		}
 		if len(data.bytes) == 0 {
 			return c
 		}

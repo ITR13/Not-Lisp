@@ -51,11 +51,12 @@ func TestInterpretString(t *testing.T) {
 	}
 	for _, pair := range tests {
 		p, r := []byte(pair[0].(string)), pair[1].(int)
-		c := Count(Parse(p))
+		parsed := Parse(p)
+		c := Count(parsed)
 		if r != c {
-			t.Errorf("%s: Expected %d but got %d", p, r, c)
+			t.Errorf("%s: Expected %d but got %d %v", p, r, c, *parsed)
 		} else {
-			t.Logf("%s: Succeeded with %d", p, c)
+			t.Logf("%s: Succeeded with %d %v", p, c, *parsed)
 		}
 	}
 }
