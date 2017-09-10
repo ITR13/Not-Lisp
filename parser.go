@@ -1,13 +1,9 @@
 package main
 
-import (
-	"fmt"
-)
-
 const (
 	Encapsulated State = iota
-	Named        State = iota
-	Bodied       State = iota
+	HasName      State = iota
+	HasBody      State = iota
 )
 
 type State uint8
@@ -18,7 +14,6 @@ type Data struct {
 }
 
 func Parse(s []byte) *Data {
-	fmt.Println(s)
 	var prev *Data
 	indent := 0
 	subString := []byte{}
@@ -45,8 +40,6 @@ func Parse(s []byte) *Data {
 				subString = []byte{'('}
 			case ')':
 				panic("Tried to exit scope")
-			case '*':
-				fmt.Println("Called Debug")
 			}
 		}
 	}
@@ -61,19 +54,17 @@ func Parse(s []byte) *Data {
 func SCall(data *Data, arg []byte) *Data {
 	//c := Count(data)
 
-	fmt.Println(data)
-
 	switch data.state {
 	case Encapsulated:
 		bytes := data.bytes[1 : len(data.bytes)-1]
 		if len(bytes) == 0 {
-			return &Data{[]byte{}, arg[1 : len(arg)-1], Named}
+			return &Data{[]byte{}, arg[1 : len(arg)-1], HasName}
 		} else {
 			return Parse(bytes)
 		}
-	case Named:
-		return &Data{arg, data.name, Bodied}
-	case Bodied:
+	case HasName:
+		return &Data{arg, data.name, HasBody}
+	case HasBody:
 		//Add Scope here
 		data = Parse(data.bytes)
 		//Remove Scope here
@@ -83,16 +74,20 @@ func SCall(data *Data, arg []byte) *Data {
 }
 
 func Count(data *Data) int {
-	if data.state == Bodied {
+	if data == nil {
+		return 0
+	}
+
+	if data.state == HasBody {
 		return -1
 	}
 	c := 0
-	for data.state != Named {
+	for data.state != HasName {
 		data = Parse(data.bytes[1 : len(data.bytes)-1])
 		if data == nil {
 			return c + 1
 		}
-		if data.state == Bodied {
+		if data.state == HasBody {
 			return c
 		}
 		c++
