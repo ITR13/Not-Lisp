@@ -6,9 +6,11 @@ import (
 )
 
 func main() {
-	program := "()()()()"
+	program := []byte("()()")
 
-	fmt.Print(program, " => ")
-	fmt.Println(Count(Parse([]byte(program))))
+	data := Parse(program)
+	//fmt.Print(program, " => ")
+	c := Count(data)
+	fmt.Println(c)
 	fmt.Println("Done")
 }

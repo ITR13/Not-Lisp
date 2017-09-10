@@ -14,7 +14,7 @@ type Data struct {
 }
 
 func Parse(s []byte) *Data {
-	var prev *Data
+	prev := &Data{[]byte{}, []byte{}, HasName}
 	indent := 0
 	subString := []byte{}
 	for _, c := range s {
@@ -27,11 +27,7 @@ func Parse(s []byte) *Data {
 				indent--
 			}
 			if indent == 0 {
-				if prev == nil {
-					prev = &Data{subString, []byte{}, Encapsulated}
-				} else {
-					prev = SCall(prev, subString)
-				}
+				prev = Call(prev, subString)
 			}
 		} else {
 			switch c {
@@ -51,22 +47,25 @@ func Parse(s []byte) *Data {
 	return prev
 }
 
-func SCall(data *Data, arg []byte) *Data {
+func Call(data *Data, arg []byte) *Data {
 	//c := Count(data)
 
 	switch data.state {
 	case Encapsulated:
-		bytes := data.bytes[1 : len(data.bytes)-1]
-		if len(bytes) == 0 {
-			return &Data{[]byte{}, arg[1 : len(arg)-1], HasName}
-		} else {
-			return Parse(bytes)
+		//fmt.Println("IE:", data.bytes)
+		if len(data.bytes) == 0 {
+			return &Data{[]byte{}, data.name, HasName}
 		}
+
+		return Parse(data.bytes[1 : len(data.bytes)-1])
 	case HasName:
+		//fmt.Println("HN:", data.name, data.bytes)
 		return &Data{arg, data.name, HasBody}
 	case HasBody:
+		//fmt.Println("HB:", data.bytes)
 		//Add Scope here
 		data = Parse(data.bytes)
+		//fmt.Println("HB<-", data)
 		//Remove Scope here
 		return data
 	}
@@ -78,18 +77,12 @@ func Count(data *Data) int {
 		return 0
 	}
 
-	if data.state == HasBody {
-		return -1
-	}
 	c := 0
 	for data.state != HasName {
-		data = Parse(data.bytes[1 : len(data.bytes)-1])
-		if data == nil {
-			return c + 1
-		}
-		if data.state == HasBody {
+		if len(data.bytes) == 0 {
 			return c
 		}
+		data = Parse(data.bytes[1 : len(data.bytes)-1])
 		c++
 	}
 	return c
