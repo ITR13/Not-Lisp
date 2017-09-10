@@ -19,10 +19,13 @@ var (
 )
 
 func Parse(s []byte) *Data {
+	I := make([]int, len(s))
+
 	var prev *Data
 	indent := 0
 	subString := []byte{}
-	for _, c := range s {
+	for i, c := range s {
+		I[i] = indent
 		if indent > 0 {
 			subString = append(subString, c)
 			switch c {
@@ -30,6 +33,7 @@ func Parse(s []byte) *Data {
 				indent++
 			case ')':
 				indent--
+				I[i]--
 			}
 			if indent == 0 {
 				prev = Call(prev, subString)
@@ -40,12 +44,14 @@ func Parse(s []byte) *Data {
 				indent++
 				subString = []byte{'('}
 			case ')':
+				PrintWithIndent(s, I[:i+1])
 				panic("Unbalanced Parenthesises")
 			}
 		}
 	}
 
 	if indent > 0 {
+		PrintWithIndent(s, I)
 		panic("Unbalanced Parenthesises")
 	}
 
