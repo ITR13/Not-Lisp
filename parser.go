@@ -17,11 +17,6 @@ type Data struct {
 	state       State
 }
 
-var (
-	CurrentScope map[int]*[]byte     = map[int]*[]byte{}
-	Overwritten  map[*[]byte]*[]byte = map[*[]byte]*[]byte{}
-)
-
 var AAA int = 0
 
 func Parse(s []byte) *Data {
@@ -96,7 +91,7 @@ func Call(data *Data, arg []byte) *Data {
 
 		override, ok := CurrentScope[c]
 		if ok && override != nil {
-			return Parse(*override)
+			return override
 		}
 	}
 
@@ -115,7 +110,7 @@ func Call(data *Data, arg []byte) *Data {
 			if c == -2 {
 				return nil
 			}
-			EnterScope(Strip(arg), c)
+			EnterScope(Parse(Strip(arg)), c)
 			data = Parse(data.bytes)
 			ExitScope(c)
 		} else {

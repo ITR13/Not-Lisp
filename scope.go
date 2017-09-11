@@ -4,13 +4,18 @@ import (
 	"fmt"
 )
 
-func EnterScope(arg []byte, name int) {
+var (
+	CurrentScope map[int]*Data   = map[int]*Data{}
+	Overwritten  map[*Data]*Data = map[*Data]*Data{}
+)
+
+func EnterScope(arg *Data, name int) {
 	old, ok := CurrentScope[name]
 	fmt.Printf("%d << %s (%v)\n", name, arg, old)
 	if ok {
-		Overwritten[&arg] = old
+		Overwritten[arg] = old
 	}
-	CurrentScope[name] = &arg
+	CurrentScope[name] = arg
 }
 
 func ExitScope(name int) {
