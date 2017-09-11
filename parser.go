@@ -66,8 +66,6 @@ func Parse(s []byte) *Data {
 		return nil
 	}
 
-	fmt.Println("Exit: ", prev, Count(prev))
-
 	if prev == nil {
 		return &Data{[]byte{}, []byte{}, Encapsulated}
 	}
@@ -76,7 +74,6 @@ func Parse(s []byte) *Data {
 }
 
 func Call(data *Data, arg []byte) *Data {
-	fmt.Println("Call: ", data, arg)
 	if data == nil {
 		return &Data{arg, []byte{}, Encapsulated}
 	}
@@ -100,13 +97,17 @@ func Call(data *Data, arg []byte) *Data {
 	case HasName:
 		return &Data{Strip(arg), data.name, HasBody}
 	case HasBody:
-		c = Count(Parse(data.name))
-		if c == -2 {
-			return nil
+		if len(data.name) != 0 {
+			c := Count(Parse(data.name))
+			if c == -2 {
+				return nil
+			}
+			EnterScope(Strip(arg), c)
+			data = Parse(data.bytes)
+			ExitScope(c)
+		} else {
+			data = Parse(data.bytes)
 		}
-		EnterScope(Strip(arg), c)
-		data = Parse(data.bytes)
-		ExitScope(c)
 		return data
 	}
 	panic("Cannot Happen")

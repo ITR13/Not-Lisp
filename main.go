@@ -7,10 +7,11 @@ import (
 )
 
 func main() {
-	data := &Data{[]byte("()()(())(()())((()))"), []byte{}, HasBody}
+	data := &Data{[]byte("()()(())(()())(())"), []byte{}, HasBody}
 
 	data = Call(data, []byte("()"))
 	fmt.Println(data, Count(data))
+
 }
 
 func PrintWithIndent(s []byte, I []int) {
