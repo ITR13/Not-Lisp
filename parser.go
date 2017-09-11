@@ -84,7 +84,7 @@ func Call(data *Data, arg []byte) *Data {
 
 	if data.state != HasBody {
 		c := Count(data)
-		fmt.Println("Count => ", c)
+
 		if c == -2 {
 			return nil
 		}
