@@ -9,21 +9,24 @@ import (
 func main() {
 	s := `
 		()()( (()) )(
-			(())()( (()) )
+			(())()( ((())) )
 		)(
 			()()( (*) )(
 				()()( (*)() )(
-					(*)()()
+					(())()( (*)() )
 				)()
 			)
 		)
 		`
+
 	s = strings.Replace(s, "*", "((((()))))", -1)
 	s = strings.Replace(s, " ", "", -1)
 	s = strings.Replace(s, "\t", "", -1)
 	s = strings.Replace(s, "\n", "", -1)
 
-	data := Parse([]byte(s))
+	bytes := []byte(s)
+
+	data := Parse(bytes)
 	fmt.Println(data, Count(data))
 
 }

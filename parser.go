@@ -27,6 +27,9 @@ var AAA int = 0
 func Parse(s []byte) *Data {
 	I := make([]int, len(s))
 
+	aaa := AAA
+	AAA++
+
 	var prev *Data
 	indent := 0
 	subString := []byte{}
@@ -42,6 +45,10 @@ func Parse(s []byte) *Data {
 				I[i]--
 			}
 			if indent == 0 {
+				if /*aaa == 0 || aaa == 6 || aaa == 19 ||*/ aaa == 33 {
+					fmt.Println(aaa, string(subString))
+				}
+
 				prev = Call(prev, subString)
 				if prev == nil {
 					fmt.Println("Call returned nil: ", string(s))
@@ -82,6 +89,7 @@ func Call(data *Data, arg []byte) *Data {
 
 	if data.state != HasBody {
 		c := Count(data)
+		fmt.Println("Count => ", c)
 		if c == -2 {
 			return nil
 		}
