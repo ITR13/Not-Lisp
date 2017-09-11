@@ -7,9 +7,23 @@ import (
 )
 
 func main() {
-	data := &Data{[]byte("()()(())(()())(())"), []byte{}, HasBody}
+	s := `
+		()()( (()) )(
+			(())()( (()) )
+		)(
+			()()( (*) )(
+				()()( (*)() )(
+					(*)()()
+				)()
+			)
+		)
+		`
+	s = strings.Replace(s, "*", "((((()))))", -1)
+	s = strings.Replace(s, " ", "", -1)
+	s = strings.Replace(s, "\t", "", -1)
+	s = strings.Replace(s, "\n", "", -1)
 
-	data = Call(data, []byte("()"))
+	data := Parse([]byte(s))
 	fmt.Println(data, Count(data))
 
 }

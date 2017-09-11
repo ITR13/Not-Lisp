@@ -22,6 +22,8 @@ var (
 	Overwritten  map[*[]byte]*[]byte = map[*[]byte]*[]byte{}
 )
 
+var AAA int = 0
+
 func Parse(s []byte) *Data {
 	I := make([]int, len(s))
 
@@ -78,13 +80,16 @@ func Call(data *Data, arg []byte) *Data {
 		return &Data{arg, []byte{}, Encapsulated}
 	}
 
-	c := Count(data)
-	if c == -2 {
-		return nil
-	}
-	override, ok := CurrentScope[c]
-	if ok && override != nil {
-		return Parse(*override)
+	if data.state != HasBody {
+		c := Count(data)
+		if c == -2 {
+			return nil
+		}
+
+		override, ok := CurrentScope[c]
+		if ok && override != nil {
+			return Parse(*override)
+		}
 	}
 
 	switch data.state {
