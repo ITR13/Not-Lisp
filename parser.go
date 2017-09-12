@@ -179,13 +179,13 @@ func ReScope(data *Data) *Data {
 	}
 
 	for data.state != HasBody {
-		if data.state == HasName {
+		if len(data.bytes) == 0 {
 			return &Data{
 				[]byte(strings.Repeat("(", depth) + strings.Repeat(")", depth)),
 				[]byte{}, Encapsulated}
 
 		}
-		data = Call(data, []byte{})
+		data = Parse(Strip(data.bytes))
 		depth++
 	}
 	return &Data{
