@@ -1,9 +1,5 @@
 package main
 
-import (
-	"fmt"
-)
-
 var (
 	CurrentScope map[int]*Data   = map[int]*Data{}
 	Overwritten  map[*Data]*Data = map[*Data]*Data{}
@@ -11,7 +7,6 @@ var (
 
 func EnterScope(arg *Data, name int) {
 	old, ok := CurrentScope[name]
-	fmt.Printf("%d << %v (%v)\n", name, arg, old)
 	if ok {
 		Overwritten[arg] = old
 	}
@@ -25,5 +20,4 @@ func ExitScope(name int) {
 	}
 	old := Overwritten[arg]
 	CurrentScope[name] = old
-	fmt.Printf("%d >> %v (%v)\n", name, old, arg)
 }
