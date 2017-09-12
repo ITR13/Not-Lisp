@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 )
 
 const (
@@ -26,20 +27,20 @@ func Parse(s []byte) *Data {
 	AAA++
 
 	var prev *Data
-	indent := 0
+	depth := 0
 	subString := []byte{}
 	for i, c := range s {
-		I[i] = indent
-		if indent > 0 {
+		I[i] = depth
+		if depth > 0 {
 			subString = append(subString, c)
 			switch c {
 			case '(':
-				indent++
+				depth++
 			case ')':
-				indent--
+				depth--
 				I[i]--
 			}
-			if indent == 0 {
+			if depth == 0 {
 				if /*aaa == 0 || aaa == 6 || aaa == 19 ||*/ aaa == 33 {
 					fmt.Println(aaa, string(subString))
 				}
@@ -54,7 +55,7 @@ func Parse(s []byte) *Data {
 		} else {
 			switch c {
 			case '(':
-				indent++
+				depth++
 				subString = []byte{'('}
 			case ')':
 				fmt.Println("Unbalanced Parenthesises: ", string(s))
@@ -64,7 +65,7 @@ func Parse(s []byte) *Data {
 		}
 	}
 
-	if indent > 0 {
+	if depth > 0 {
 		fmt.Println("Unbalanced Parenthesises: ")
 		PrintWithIndent(s, I)
 		return nil
@@ -110,7 +111,7 @@ func Call(data *Data, arg []byte) *Data {
 			if c == -2 {
 				return nil
 			}
-			EnterScope(Parse(Strip(arg)), c)
+			EnterScope(ReScope(Parse(Strip(arg))), c)
 			data = Parse(data.bytes)
 			ExitScope(c)
 		} else {
@@ -151,16 +152,16 @@ func Count(data *Data) int {
 }
 
 func Strip(bytes []byte) []byte {
-	indent := 0
+	depth := 0
 	exited := false
 	for _, c := range bytes {
 		switch c {
 		case '(':
-			indent++
+			depth++
 		case ')':
-			indent--
+			depth--
 		}
-		if indent == 0 {
+		if depth == 0 {
 			if exited {
 				panic("Tried to strip unencapsulated bytes")
 			}
@@ -168,4 +169,28 @@ func Strip(bytes []byte) []byte {
 		}
 	}
 	return bytes[1 : len(bytes)-1]
+}
+
+func ReScope(data *Data) *Data {
+	depth := 0
+
+	if data.state == HasBody || data.state == HasName {
+		return data
+	}
+
+	for data.state != HasBody {
+		if data.state == HasName {
+			return &Data{
+				[]byte(strings.Repeat("(", depth) + strings.Repeat(")", depth)),
+				[]byte{}, Encapsulated}
+
+		}
+		data = Call(data, []byte{})
+		depth++
+	}
+	return &Data{
+		[]byte(strings.Repeat("(", depth) +
+			string(data.bytes) +
+			strings.Repeat(")", depth)),
+		[]byte{}, Encapsulated}
 }
