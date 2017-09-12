@@ -404,3 +404,70 @@ func TestParameters(t *testing.T) {
 		}
 	}
 }
+
+func TestTuringCompleteness(t *testing.T) {
+	tests := [][2]interface{}{
+		//Adding to a variable through method call
+		{`
+			()()( * )(
+				()()( (*) )(
+					*()
+				)(
+					()()( ((*)) )(
+						()()( * )(
+							((*))()
+						)( (*()) )
+					)
+				)
+			)()			
+		`, 0}, {`
+			()()( * )(
+				()()( (*) )(
+					(*)()(*)
+				)(
+					()()( ((*)) )(
+						()()( * )(
+							((*))()()
+						)( (*()) )
+					)
+				)
+			)()			
+		`, 1}, {`
+			()()( * )(
+				()()( (*) )(
+					(*)()(
+						(*)()
+					)
+				)(
+					()()( ((*)) )(
+						()()( * )(
+							((*))()()
+						)( (*()) )
+					)
+				)
+			)()	
+		`, 2},
+	}
+	for _, pair := range tests {
+		s := pair[0].(string)
+		originalString := s
+		s = strings.Replace(s, "*", "(((((((((())))))))))", -1)
+		s = strings.Replace(s, " ", "", -1)
+		s = strings.Replace(s, "\t", "", -1)
+		s = strings.Replace(s, "\n", "", -1)
+
+		p, r := []byte(s), pair[1].(int)
+		c := Count(Parse(p))
+		if testing.Verbose() {
+			if r != c {
+				t.Errorf("Failure: got %d wanted %d in %s", c, r, originalString)
+			} else {
+				t.Logf("Success: got %d wanted %d in %s", c, r, originalString)
+			}
+		} else {
+			if r != c {
+				t.Errorf("Failure: got %d wanted %d in %s", c, r, originalString)
+			}
+		}
+	}
+}
