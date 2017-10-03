@@ -111,7 +111,7 @@ func Call(data *Data, arg []byte) *Data {
 			if c == -2 {
 				return nil
 			}
-			EnterScope(ReScope(Parse(Strip(arg))), c)
+			EnterScope(ReWrap(Parse(Strip(arg))), c)
 			data = Parse(data.bytes)
 			ExitScope(c)
 		} else {
@@ -171,7 +171,7 @@ func Strip(bytes []byte) []byte {
 	return bytes[1 : len(bytes)-1]
 }
 
-func ReScope(data *Data) *Data {
+func ReWrap(data *Data) *Data {
 	depth := 0
 
 	if data.state == HasBody || data.state == HasName {
