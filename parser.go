@@ -18,13 +18,8 @@ type Data struct {
 	state       State
 }
 
-var AAA int = 0
-
 func Parse(s []byte) *Data {
 	I := make([]int, len(s))
-
-	aaa := AAA
-	AAA++
 
 	var prev *Data
 	depth := 0
@@ -41,10 +36,6 @@ func Parse(s []byte) *Data {
 				I[i]--
 			}
 			if depth == 0 {
-				if /*aaa == 0 || aaa == 6 || aaa == 19 ||*/ aaa == 33 {
-					fmt.Println(aaa, string(subString))
-				}
-
 				prev = Call(prev, subString)
 				if prev == nil {
 					fmt.Println("Call returned nil: ", string(s))
