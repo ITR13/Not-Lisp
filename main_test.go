@@ -717,6 +717,41 @@ func TestTuringCompleteness(t *testing.T) {
 				)(  ((*)) () )
 			))
 		`, 1},
+
+		/*//Increasing variable until it's 5
+		{`
+			()()(   *   )(
+				()()(  (*)  )(
+					()()( ((*)) )(
+
+						()()( ((((*)))) )(
+							((((*))))()
+						)(()()(
+							()()( ((((*)))) )(
+							()()(  (((*)))  )(
+								(*)()
+							)(  ((*))( ((((*)))) )  )
+							)(    * 				)
+						))
+
+					)(
+						()()( (((((*))))) )(
+							()()( * )(
+								(((((*)))))()()
+							)( (*()) )
+						)
+					)
+				)(
+					()()()(
+						()()( ((((( ))))) )(
+						()()(      *()    )(
+							((((( )))))()()
+						)( ((((*))))() )
+						)(  (((*))) () )
+					)
+				)
+			)()
+		`, 5},*/
 	}
 	for _, pair := range tests {
 		s := pair[0].(string)
@@ -724,6 +759,7 @@ func TestTuringCompleteness(t *testing.T) {
 		s = strings.Replace(s, "*", "(((((((((())))))))))", -1)
 		s = strings.Replace(s, " ", "", -1)
 		s = strings.Replace(s, "\t", "", -1)
+		s = strings.Replace(s, "\r", "", -1)
 		s = strings.Replace(s, "\n", "", -1)
 
 		p, r := []byte(s), pair[1].(int)
