@@ -1,4 +1,4 @@
-package main
+package interpreter
 
 var (
 	CurrentScope map[int]*Data   = map[int]*Data{}
