@@ -83,7 +83,7 @@ func Call(data *Data, arg []byte) *Data {
 
 		override, ok := CurrentScope[c]
 		if ok && override != nil {
-			fmt.Println("Calling: ", c, string(override.bytes))
+			//fmt.Println("Calling: ", c, string(override.bytes))
 			return override
 		}
 	}
