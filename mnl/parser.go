@@ -107,7 +107,7 @@ func (mp *metaParser) ParseLine(line string) (*Action, error) {
 	}
 	if cToken != len(tokens) {
 		return nil, fmt.Errorf(
-			"[%d] Expected a total of [%d] tokens, but got [%d]",
+			"[%d] Expected a total of %d tokens, but got %d",
 			mp.lineNumber,
 			cToken,
 			len(tokens),
@@ -162,11 +162,11 @@ expLoop:
 		}
 
 		legalCallT := []string{"N", "F", "B"}
-		legalCallP := []string{"ZCALL", "CALL"}
+		legalCallP := []string{"CALL", "ZCALL"}
 
 		for i := 0; i < 6; i++ {
 			if tokens[offset] == legalCallP[i/3]+legalCallT[i%3] {
-				innerExp, offset, err = mp.ParseExp(tokens, offset+1, i/3+1)
+				innerExp, offset, err = mp.ParseExp(tokens, offset+1, 2-i/3)
 				if err != nil {
 					return nil, -1, err
 				}
@@ -208,24 +208,33 @@ expLoop:
 			if err != nil {
 				return nil, -1, err
 			}
-			expressions[currentExp] = ADD{n, expressions}
+			expressions[currentExp] = ADD{n, innerExp}
 		case "TSET":
 			innerExp, offset, err = mp.ParseExp(tokens, offset+1, 3)
 			if err != nil {
 				return nil, -1, err
 			}
-			expressions[currentExp] = TSET{false, expressions}
+			expressions[currentExp] = TSET{false, innerExp}
 		case "TFUN":
 			innerExp, offset, err = mp.ParseExp(tokens, offset+1, 3)
 			if err != nil {
 				return nil, -1, err
 			}
-			expressions[currentExp] = TSET{true, expressions}
+			expressions[currentExp] = TSET{true, innerExp}
+		case "LAM":
+			innerExp, offset, err = mp.ParseExp(tokens, offset+1, 2)
+			if err != nil {
+				return nil, -1, err
+			}
+			expressions[currentExp] = LAMBDA{innerExp}
+		case "ZERO":
+			offset += 1
+			expressions[currentExp] = ZERO{}
 		default:
 			return nil, -1, fmt.Errorf(
 				"[%d] Unknown token \"%s\"",
 				mp.lineNumber,
-				tokens[0],
+				tokens[offset],
 			)
 		}
 	}

@@ -106,7 +106,31 @@ func TestSimple(t *testing.T) {
 		`, 2}, {`
 			FUN 5 2
 			START 5 0
-		`, 3},
+		`, 3}, {`
+			SET 5 2
+			SET 6 5
+			START 6 0
+		`, 5},
+
+		{`
+			FUN 5 TSET 5 2 ZCALLN 5
+			START ZCALLN 5 0
+		`, 2}, {`
+			FUN 5 TSET 5 2 CALLN 5 0
+			START CALLN 5 0 0
+		`, 2},
+
+		{`
+			DEF A 8
+			DEF R 9
+			DEF V 10
+			DEF M 11
+			SET V 5
+			SET A LAM M TSET V ADD 1 V ZCALLF M
+			FUN R TSET 5 LAM ZERO CALLF A ZCALLN R TSET ZCALLN V V ZCALLF 5
+			
+			START ZCALLN R ZERO
+		`, 5},
 	}
 
 testLoop:
@@ -125,7 +149,7 @@ testLoop:
 		v := interpreter.RunForInt(s)
 		wanted := tests[i][1].(int)
 		if v != wanted {
-			t.Errorf("Test %d gave %d but wanted %d", i, v, wanted)
+			t.Errorf("Test %d gave %d but wanted %d:\n%s", i, v, wanted, s)
 		}
 	}
 }

@@ -12,7 +12,7 @@ const (
 	CallF  CallType = iota
 	CallB  CallType = iota
 	ZCallN CallType = iota
-	ZCallT CallType = iota
+	ZCallF CallType = iota
 	ZCallB CallType = iota
 )
 
@@ -82,7 +82,13 @@ func (c Call) Call(e Environment) (Expression, error) {
 
 func (c Call) Convert() string {
 	if c.callType > CallB {
-		return c.expression[0].Convert()
+		if c.callType == ZCallF {
+			return c.expression[0].Convert() + "()()"
+		}
+		return c.expression[0].Convert() + "()"
+	} else if c.callType == CallF {
+		return c.expression[0].Convert() +
+			"()(" + c.expression[1].Convert() + ")"
 	}
 	return c.expression[0].Convert() + "(" + c.expression[1].Convert() + ")"
 }
@@ -115,6 +121,22 @@ func (s TSET) Convert() string {
 		")"
 }
 
+type LAMBDA struct {
+	expressions []Expression
+}
+
+func (l LAMBDA) Call(e Environment) (Expression, error) {
+	panic("Not yet Implemented")
+}
+
+func (l LAMBDA) Convert() string {
+	return "()()(" +
+		l.expressions[0].Convert() +
+		")(" +
+		l.expressions[1].Convert() +
+		")"
+}
+
 type ADD struct {
 	n           int
 	expressions []Expression
@@ -128,4 +150,14 @@ func (a ADD) Convert() string {
 	return strings.Repeat("(", a.n) +
 		a.expressions[0].Convert() +
 		strings.Repeat(")", a.n)
+}
+
+type ZERO struct{}
+
+func (a ZERO) Call(e Environment) (Expression, error) {
+	panic("Not yet Implemented")
+}
+
+func (a ZERO) Convert() string {
+	return ""
 }
