@@ -16,19 +16,68 @@ const (
 	ZCallB CallType = iota
 )
 
-type Environment struct {
+type environment struct {
+	value     Expression
+	variables map[int]Expression
 }
 
-type Action struct {
+type action struct {
 	name        string
 	expressions []Expression
 }
 
-func (a Action) Call(e Environment) error {
-	panic("Not yet Implemented")
+func (a action) Call(e environment) error {
+	switch a.name {
+	case "SET":
+		n, err := Count(a.expressions[0], e)
+		if err != nil {
+			return err
+		}
+		e.variables[n] = a.expressions[1]
+	case "FUN":
+		n, err := Count(a.expressions[0], e)
+		if err != nil {
+			return err
+		}
+		e.variables[n] = a.expressions[1]
+	case "START":
+		par, err := Count(a.expressions[1], e)
+		if err != nil {
+			return err
+		}
+
+		exp, err := a.expressions[0].Call(par, e)
+		if err != nil {
+			return err
+		}
+		e.value = exp
+	default:
+		panic("CANNOT HAPPEN")
+	}
+	return nil
 }
 
-func (a Action) Convert() string {
+func Count(exp Expression, e environment) (int, error) {
+	var err error
+	for true {
+		outside := 0
+		switch t := exp.(type) {
+		case Number:
+			return t.value + outside, nil
+		case ZERO:
+			return outside, nil
+		default:
+			exp, err = exp.Call(0, e)
+			if err != nil {
+				return -2, err
+			}
+			outside++
+		}
+	}
+	panic("Cannot happen")
+}
+
+func (a action) Convert() string {
 	switch a.name {
 	case "SET":
 		return "()()(" +
@@ -50,7 +99,7 @@ func (a Action) Convert() string {
 }
 
 type Expression interface {
-	Call(Environment) (Expression, error)
+	Call(int, environment) (Expression, error)
 	Convert() string
 }
 
@@ -58,8 +107,15 @@ type Number struct {
 	value int
 }
 
-func (n Number) Call(e Environment) (Expression, error) {
-	panic("Not yet Implemented")
+func (number Number) Call(n int, e environment) (Expression, error) {
+	exp, ok := e.variables[n]
+	if ok {
+		return exp, nil
+	}
+	if number.value == -1 {
+		return Number{1}, nil
+	}
+	return Number{number.value - 1}, nil
 }
 
 func (n Number) Convert() string {
@@ -76,8 +132,25 @@ type Call struct {
 	expression []Expression
 }
 
-func (c Call) Call(e Environment) (Expression, error) {
-	panic("Not yet Implemented")
+func (c Call) Call(n int, e environment) (Expression, error) {
+	if c.callType > CallB {
+		if c.callType == ZCallF {
+			return c.expression[0].Call(0, e)
+		}
+		return c.expression[0], nil
+	}
+	n, err := Count(c.expression[1], e)
+	if err != nil {
+		return nil, err
+	}
+	if c.callType == CallF {
+		exp, err := c.expression[0].Call(0, e)
+		if err != nil {
+			return nil, err
+		}
+		return exp.Call(n, e)
+	}
+	return c.expression[0].Call(n, e)
 }
 
 func (c Call) Convert() string {
@@ -98,7 +171,7 @@ type TSET struct {
 	expressions []Expression
 }
 
-func (s TSET) Call(e Environment) (Expression, error) {
+func (s TSET) Call(n int, e environment) (Expression, error) {
 	panic("Not yet Implemented")
 }
 
@@ -125,7 +198,7 @@ type LAMBDA struct {
 	expressions []Expression
 }
 
-func (l LAMBDA) Call(e Environment) (Expression, error) {
+func (l LAMBDA) Call(n int, e environment) (Expression, error) {
 	panic("Not yet Implemented")
 }
 
@@ -142,7 +215,7 @@ type ADD struct {
 	expressions []Expression
 }
 
-func (a ADD) Call(e Environment) (Expression, error) {
+func (a ADD) Call(n int, e environment) (Expression, error) {
 	panic("Not yet Implemented")
 }
 
@@ -154,7 +227,7 @@ func (a ADD) Convert() string {
 
 type ZERO struct{}
 
-func (a ZERO) Call(e Environment) (Expression, error) {
+func (a ZERO) Call(n int, e environment) (Expression, error) {
 	panic("Not yet Implemented")
 }
 

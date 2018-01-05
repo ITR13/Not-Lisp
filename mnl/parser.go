@@ -11,14 +11,14 @@ type metaParser struct {
 	hasStart   bool
 
 	dictionary map[string]int
-	actions    []Action
+	actions    []action
 }
 
 func CreateParser() metaParser {
 	return metaParser{
 		0, false,
 		make(map[string]int),
-		make([]Action, 0),
+		make([]action, 0),
 	}
 }
 
@@ -41,7 +41,7 @@ func (mp *metaParser) AddLine(line string) error {
 	return nil
 }
 
-func (mp *metaParser) ParseLine(line string) (*Action, error) {
+func (mp *metaParser) ParseLine(line string) (*action, error) {
 	mp.lineNumber++
 	line = strings.ToUpper(strings.Replace(line, "\t", " ", -1))
 	split := strings.Split(line, " ")
@@ -114,7 +114,7 @@ func (mp *metaParser) ParseLine(line string) (*Action, error) {
 		)
 	}
 
-	return &Action{tokens[0], expressions}, nil
+	return &action{tokens[0], expressions}, nil
 }
 
 func (mp *metaParser) ParseExp(
@@ -252,4 +252,16 @@ func (mp *metaParser) Convert() (string, error) {
 	} else {
 		return s, fmt.Errorf("Converted program without a start")
 	}
+}
+
+func (mp *metaParser) Run() (int, error) {
+	e := environment{ZERO{}, make(map[int]Expression)}
+	for i := range mp.actions {
+		err := mp.actions[i].Call(e)
+		if err != nil {
+			return -2, err
+		}
+	}
+
+	return Count(e.value, environment{ZERO{}, make(map[int]Expression)})
 }

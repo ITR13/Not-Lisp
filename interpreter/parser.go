@@ -18,6 +18,12 @@ type Data struct {
 	state       State
 }
 
+func RunForInt(s string) int {
+	bytes := []byte(s)
+	data := Parse(bytes)
+	return Count(data)
+}
+
 func Parse(s []byte) *Data {
 	I := make([]int, len(s))
 

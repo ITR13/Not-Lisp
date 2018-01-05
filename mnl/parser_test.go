@@ -121,15 +121,21 @@ func TestSimple(t *testing.T) {
 		`, 2},
 
 		{`
-			DEF A 8
-			DEF R 9
-			DEF V 10
-			DEF M 11
-			SET V 5
-			SET A LAM M TSET V ADD 1 V ZCALLF M
-			FUN R TSET 5 LAM ZERO CALLF A ZCALLN R TSET ZCALLN V V ZCALLF 5
-			
-			START ZCALLN R ZERO
+DEF ADDFUNC 8
+DEF REPEAT 9
+DEF CALLADD 10
+DEF HEAL 11
+DEF V 12
+DEF M 13
+
+SET V 5
+SET ADDFUNC LAM M TSET V ADD 1 V ZCALLF M
+FUN CALLADD CALLF ADDFUNC ZCALLN REPEAT
+
+SET HEAL LAM M TSET 6 5 TSET ADD 1 ZCALLN V ZCALLN V ZCALLF M
+FUN REPEAT TSET 6 ZCALLN CALLADD TSET ADD 1 ZCALLN V V ZCALLF 6
+
+START ZCALLN REPEAT ZERO
 		`, 5},
 	}
 
@@ -144,12 +150,21 @@ testLoop:
 				continue testLoop
 			}
 		}
+		wanted := tests[i][1].(int)
+
+		v, err := mp.Run()
+		if err != nil {
+			t.Errorf("Test %d [R] gave an error:\n%v", i, err)
+			continue testLoop
+		}
+		if v != wanted {
+			t.Errorf("Test %d [R] gave %d but wanted %d", i, v, wanted)
+		}
 
 		s, _ := mp.Convert()
-		v := interpreter.RunForInt(s)
-		wanted := tests[i][1].(int)
+		v = interpreter.RunForInt(s)
 		if v != wanted {
-			t.Errorf("Test %d gave %d but wanted %d:\n%s", i, v, wanted, s)
+			t.Errorf("Test %d [C] gave %d but wanted %d:\n%s", i, v, wanted, s)
 		}
 	}
 }

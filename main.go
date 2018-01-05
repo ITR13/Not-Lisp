@@ -9,6 +9,10 @@ import (
 )
 
 func main() {
+
+}
+
+func basic() {
 	s := `
 			()()(    *    )(
 			()()(   (*)   )(
@@ -65,5 +69,4 @@ func main() {
 
 	data := interpreter.Parse(bytes)
 	fmt.Println(data, interpreter.Count(data))
-
 }
