@@ -257,11 +257,10 @@ func (mp *metaParser) Convert() (string, error) {
 func (mp *metaParser) Run() (int, error) {
 	e := environment{ZERO{}, make(map[int]Expression)}
 	for i := range mp.actions {
-		err := mp.actions[i].Call(e)
+		err := mp.actions[i].Call(&e)
 		if err != nil {
 			return -2, err
 		}
 	}
-
-	return Count(e.value, environment{ZERO{}, make(map[int]Expression)})
+	return Count(e.value, &e)
 }

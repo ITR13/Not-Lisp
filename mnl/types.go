@@ -26,7 +26,8 @@ type action struct {
 	expressions []Expression
 }
 
-func (a action) Call(e environment) error {
+func (a action) Call(e *environment) error {
+	fmt.Println("Calling " + a.name)
 	switch a.name {
 	case "SET":
 		n, err := Count(a.expressions[0], e)
@@ -39,7 +40,7 @@ func (a action) Call(e environment) error {
 		if err != nil {
 			return err
 		}
-		e.variables[n] = a.expressions[1]
+		e.variables[n] = LAMBDA{[]Expression{ZERO{}, a.expressions[1]}}
 	case "START":
 		par, err := Count(a.expressions[1], e)
 		if err != nil {
@@ -47,6 +48,7 @@ func (a action) Call(e environment) error {
 		}
 
 		exp, err := a.expressions[0].Call(par, e)
+		fmt.Println(par, exp)
 		if err != nil {
 			return err
 		}
@@ -57,7 +59,7 @@ func (a action) Call(e environment) error {
 	return nil
 }
 
-func Count(exp Expression, e environment) (int, error) {
+func Count(exp Expression, e *environment) (int, error) {
 	var err error
 	for true {
 		outside := 0
@@ -99,7 +101,7 @@ func (a action) Convert() string {
 }
 
 type Expression interface {
-	Call(int, environment) (Expression, error)
+	Call(int, *environment) (Expression, error)
 	Convert() string
 }
 
@@ -107,8 +109,8 @@ type Number struct {
 	value int
 }
 
-func (number Number) Call(n int, e environment) (Expression, error) {
-	exp, ok := e.variables[n]
+func (number Number) Call(n int, e *environment) (Expression, error) {
+	exp, ok := e.variables[number.value]
 	if ok {
 		return exp, nil
 	}
@@ -132,7 +134,7 @@ type Call struct {
 	expression []Expression
 }
 
-func (c Call) Call(n int, e environment) (Expression, error) {
+func (c Call) Call(n int, e *environment) (Expression, error) {
 	if c.callType > CallB {
 		if c.callType == ZCallF {
 			return c.expression[0].Call(0, e)
@@ -171,7 +173,7 @@ type TSET struct {
 	expressions []Expression
 }
 
-func (s TSET) Call(n int, e environment) (Expression, error) {
+func (s TSET) Call(n int, e *environment) (Expression, error) {
 	panic("Not yet Implemented")
 }
 
@@ -198,8 +200,14 @@ type LAMBDA struct {
 	expressions []Expression
 }
 
-func (l LAMBDA) Call(n int, e environment) (Expression, error) {
-	panic("Not yet Implemented")
+func (l LAMBDA) Call(n int, e *environment) (Expression, error) {
+	switch l.expressions[0].(type) {
+	case ZERO:
+		fmt.Println("!!!", l.expressions[1])
+		return l.expressions[1], nil
+	default:
+		panic("NOT IMPLEMENTED YET")
+	}
 }
 
 func (l LAMBDA) Convert() string {
@@ -215,7 +223,7 @@ type ADD struct {
 	expressions []Expression
 }
 
-func (a ADD) Call(n int, e environment) (Expression, error) {
+func (a ADD) Call(n int, e *environment) (Expression, error) {
 	panic("Not yet Implemented")
 }
 
@@ -227,7 +235,7 @@ func (a ADD) Convert() string {
 
 type ZERO struct{}
 
-func (a ZERO) Call(n int, e environment) (Expression, error) {
+func (a ZERO) Call(n int, e *environment) (Expression, error) {
 	panic("Not yet Implemented")
 }
 
