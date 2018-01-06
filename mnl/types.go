@@ -61,8 +61,8 @@ func (a action) Call(e *environment) error {
 
 func Count(exp Expression, e *environment) (int, error) {
 	var err error
+	outside := 0
 	for true {
-		outside := 0
 		switch t := exp.(type) {
 		case Number:
 			return t.value + outside, nil
@@ -102,6 +102,7 @@ func (a action) Convert() string {
 
 type Expression interface {
 	Call(int, *environment) (Expression, error)
+	Evaluate(*environment) (Expression, error)
 	Convert() string
 }
 
@@ -120,6 +121,10 @@ func (number Number) Call(n int, e *environment) (Expression, error) {
 	return Number{number.value - 1}, nil
 }
 
+func (number Number) Evaluate(e *environment) (Expression, error) {
+	return number, nil
+}
+
 func (n Number) Convert() string {
 	if n.value == 0 {
 		return "()()"
@@ -135,23 +140,32 @@ type Call struct {
 }
 
 func (c Call) Call(n int, e *environment) (Expression, error) {
-	if c.callType > CallB {
-		if c.callType == ZCallF {
-			return c.expression[0].Call(0, e)
+	exp, err := c.Evaluate(e)
+	if err != nil {
+		return nil, err
+	}
+	return exp.Call(n, e)
+}
+
+func (c Call) Evaluate(e *environment) (Expression, error) {
+	var err error
+	exp := c.expression[0]
+
+	if c.callType%3 == 1 {
+		exp, err = exp.Call(0, e)
+		if err != nil {
+			return nil, err
 		}
-		return c.expression[0], nil
+	}
+
+	if c.callType > CallB {
+		return exp.Call(0, e)
 	}
 	n, err := Count(c.expression[1], e)
 	if err != nil {
 		return nil, err
 	}
-	if c.callType == CallF {
-		exp, err := c.expression[0].Call(0, e)
-		if err != nil {
-			return nil, err
-		}
-		return exp.Call(n, e)
-	}
+
 	return c.expression[0].Call(n, e)
 }
 
@@ -173,8 +187,45 @@ type TSET struct {
 	expressions []Expression
 }
 
-func (s TSET) Call(n int, e *environment) (Expression, error) {
-	panic("Not yet Implemented")
+func (s TSET) Call(nextN int, e *environment) (Expression, error) {
+	exp, err := s.Evaluate(e)
+	if err != nil {
+		return nil, err
+	}
+	return exp.Call(nextN, e)
+}
+
+func (s TSET) Evaluate(e *environment) (Expression, error) {
+	switch s.expressions[0].(type) {
+	case ZERO:
+		return s.expressions[2].Evaluate(e)
+	}
+
+	n, err := Count(s.expressions[0], e)
+	if err != nil {
+		return nil, err
+	}
+
+	oldval, ok := e.variables[n]
+	if s.isFunc {
+		e.variables[n] = LAMBDA{[]Expression{ZERO{}, s.expressions[1]}}
+	} else {
+		exp, err := s.expressions[1].Evaluate(e)
+		if err != nil {
+			return nil, err
+		}
+		e.variables[n] = exp
+	}
+	exp, err := s.expressions[2].Evaluate(e)
+	if ok {
+		e.variables[n] = oldval
+	} else {
+		delete(e.variables, n)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return exp, nil
 }
 
 func (s TSET) Convert() string {
@@ -203,11 +254,14 @@ type LAMBDA struct {
 func (l LAMBDA) Call(n int, e *environment) (Expression, error) {
 	switch l.expressions[0].(type) {
 	case ZERO:
-		fmt.Println("!!!", l.expressions[1])
 		return l.expressions[1], nil
 	default:
-		panic("NOT IMPLEMENTED YET")
+		panic("Not yet Implemented")
 	}
+}
+
+func (l LAMBDA) Evaluate(e *environment) (Expression, error) {
+	panic("Not yet Implemented")
 }
 
 func (l LAMBDA) Convert() string {
@@ -224,7 +278,27 @@ type ADD struct {
 }
 
 func (a ADD) Call(n int, e *environment) (Expression, error) {
-	panic("Not yet Implemented")
+	if a.n == 0 {
+		return a.expressions[0].Call(n, e)
+	}
+	exp, err := a.expressions[0].Evaluate(e)
+	if err != nil {
+		return nil, err
+	}
+
+	if a.n == 1 {
+		return exp, nil
+	}
+
+	return ADD{a.n - 1, []Expression{exp}}, nil
+}
+
+func (a ADD) Evaluate(e *environment) (Expression, error) {
+	exp, err := a.expressions[0].Evaluate(e)
+	if err != nil {
+		return nil, err
+	}
+	return ADD{a.n, []Expression{exp}}, nil
 }
 
 func (a ADD) Convert() string {
@@ -237,6 +311,10 @@ type ZERO struct{}
 
 func (a ZERO) Call(n int, e *environment) (Expression, error) {
 	panic("Not yet Implemented")
+}
+
+func (a ZERO) Evaluate(e *environment) (Expression, error) {
+	return a, nil
 }
 
 func (a ZERO) Convert() string {
