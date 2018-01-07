@@ -254,13 +254,14 @@ func (mp *metaParser) Convert() (string, error) {
 	}
 }
 
-func (mp *metaParser) Run() (int, error) {
-	e := environment{ZERO{}, make(map[int]Expression)}
+func (mp *metaParser) Run(settings EnvSettings) (int, error) {
+	e := environment{settings, ZERO{}, make(map[int]Expression)}
 	for i := range mp.actions {
 		err := mp.actions[i].Call(&e)
 		if err != nil {
 			return -2, err
 		}
 	}
+	e.variables = make(map[int]Expression)
 	return Count(e.value, &e)
 }
